@@ -40,6 +40,7 @@ class ShellPolicy:
             "dd",
             "mount",
             "umount",
+            "sqlmap",
         }
 
         # Shell benzeri birleştirmeler bu sürümde desteklenmiyor.

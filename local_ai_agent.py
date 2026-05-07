@@ -7,6 +7,8 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from wizard import istegi_zenginlestir, isteginizi_sorun
+
 
 def _configure_utf8_io() -> None:
     """
@@ -104,6 +106,7 @@ class CommandPolicy:
             "systemctl",
             "apt-cache",
             "dpkg",
+            "sqlmap",
         }
 
         self.hard_block = {"mkfs", "dd"}
@@ -117,6 +120,7 @@ class CommandPolicy:
             "useradd",
             "passwd",
             "systemctl",
+            "sqlmap",
         }
 
         self.disallowed_tokens = {"|", "||", "&", "&&", ";", ">", ">>", "<", "<<", "$(", "`"}
@@ -306,12 +310,37 @@ def main() -> None:
     _configure_utf8_io()
     planner = PlannerLLM()
     policy = CommandPolicy()
-    runner = SafeCommandRunner(policy=policy)
+    runner = SafeCommandRunner(policy=policy, timeout_s=900)
     logger = JsonlLogger(Path("./agent_logs/events.jsonl"))
     agent = Agent(planner, policy, runner, logger)
 
-    user_request = input("İstek: ").strip()
-    plan = planner.propose_plan(user_request)
+    istek_ham = isteginizi_sorun()
+    if not istek_ham.strip():
+        print("İstek boş olamaz.")
+        sys.exit(2)
+
+    user_request_enriched, sqlmap_argv = istegi_zenginlestir(istek_ham)
+
+    if sqlmap_argv is not None:
+        plan = [
+            Step(
+                title="sqlmap ile test",
+                rationale=(
+                    "Kullanıcının girdiği hedef URL ve parametrelere göre SQL enjeksiyon kontrolüdür. "
+                    "Yalnızca izin verilen sistemler veya lab ortamlarında kullanın."
+                ),
+                command=sqlmap_argv,
+                needs_confirmation=True,
+                risk_reason=(
+                    "sqlmap hedefe istek gönderir ve ağ/sunucu yükü oluşturabilir; "
+                    "yalnızca yetkilendirilmiş testlerde çalıştırın."
+                ),
+            ),
+        ]
+    else:
+        plan = planner.propose_plan(user_request_enriched)
+
+    user_request = user_request_enriched
 
     print("\nÖnerilen plan (henüz hiçbir şey çalıştırılmadı):")
     approvals: Dict[int, bool] = {}

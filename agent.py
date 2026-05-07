@@ -196,24 +196,20 @@ class LinuxAgent:
         print(f"\nRapor yazıldı: {os.path.abspath(str(self.report.path))}")
 
 
-def _usage_exit() -> None:
-    raise SystemExit('Kullanım: python3 main.py "isteğiniz"  (veya)  python3 agent.py "isteğiniz"')
-
-
 if __name__ == "__main__":
-    # Kolaylık: agent.py tek başına da çalıştırılabilsin.
+    # Kolaylık: agent.py tek başına da çalıştırılabilsin (main.py ile aynı interaktif akış).
     import sys
 
-    if len(sys.argv) < 2:
-        _usage_exit()
-
-    user_request = " ".join(sys.argv[1:]).strip()
-    if not user_request:
-        _usage_exit()
-
-    llm = OllamaLLM(base_url="http://localhost:11434", model="llama3")
     from tools.shell import ShellPolicy
+    from wizard import tam_interaktif_akis
 
-    shell = ShellTool(policy=ShellPolicy())
-    LinuxAgent(llm=llm, shell=shell, report_path="docs/report.md").run(user_request)
+    try:
+        user_request, base, model, rapor = tam_interaktif_akis()
+    except ValueError as e:
+        print(str(e), file=sys.stderr)
+        sys.exit(2)
+
+    llm = OllamaLLM(base_url=base, model=model)
+    shell = ShellTool(policy=ShellPolicy(), timeout_s=900)
+    LinuxAgent(llm=llm, shell=shell, report_path=rapor).run(user_request)
 

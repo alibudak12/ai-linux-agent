@@ -14,20 +14,32 @@ Bu proje, kullanıcı isteklerini adım adım plana çeviren, komutları **güve
 
 ## Çalıştırma
 
-Kali Linux'ta:
+Kali Linux'ta tam akış (**her zaman ilk soru: isteğiniz**):
 
 ```bash
-python3 main.py "analyze system"
+python3 main.py
+# veya
+python3 agent.py
 ```
 
-İsterseniz parametre vererek çalıştırabilirsiniz. Parametre vermezseniz program **interaktif olarak** şu parametreleri Türkçe sorar:
+- İlk soru: **İsteğiniz nedir?** (Komut satırına ek yazdığınız metin `[varsayılan]` olarak gösterilir; Enter yaparsanız o metin seçilir.)
+- İsteğinizde **sqlmap** geçiyorsa, hedef URL ve diğer seçenekler **Türkçe, tek tek** sorulur; ardından Ollama adresi / model / rapor dosyası sorulur.
+- `python3 main.py sistem analizi` gibi parametre kullanırsanız yine **önce İsteğiniz** çıkar; CLI metni varsayılan olur.
 
-- İstek
-- Ollama adresi
-- Model adı
-- Rapor yolu
+Yol (Ollama’lı tam ajan) raporu `docs/report.md` dosyasına yazar:
 
-Program adım adım planı gösterir, gerekiyorsa riskli adımlar için `e/h` onayı ister ve raporu `docs/report.md` dosyasına yazar.
+```bash
+ollama serve
+ollama pull llama3
+```
+
+Eski/demo betik (**Ollama yok**, iç planlayıcı):
+
+```bash
+python3 local_ai_agent.py
+```
+
+Program adım adım planı gösterir; riskli komutlar (ör. `sqlmap`) için `e/h` onayı ister ve `./agent_report.md` üretir.
 
 ## Üretilen Dosyalar
 

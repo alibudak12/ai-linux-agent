@@ -88,6 +88,7 @@ class PlannerLLM:
 
 class CommandPolicy:
     def __init__(self) -> None:
+        # Sistem + sık pentest araçları (wizard ile üretilir; DD/mkfs hâlâ engelli)
         self.allow_commands = {
             "ip",
             "ss",
@@ -106,7 +107,24 @@ class CommandPolicy:
             "systemctl",
             "apt-cache",
             "dpkg",
+            # wizard kayıtlı araçları
             "sqlmap",
+            "nmap",
+            "hydra",
+            "gobuster",
+            "ffuf",
+            "wfuzz",
+            "nikto",
+            "wpscan",
+            "masscan",
+            "rustscan",
+            "enum4linux",
+            "enum4linux-ng",
+            "theHarvester",
+            "theharvester",
+            "bloodhound-python",
+            "responder",
+            "evil-winrm",
         }
 
         self.hard_block = {"mkfs", "dd"}
@@ -120,7 +138,24 @@ class CommandPolicy:
             "useradd",
             "passwd",
             "systemctl",
+            # Tüm penetration test araçları onay gerektirir
             "sqlmap",
+            "nmap",
+            "hydra",
+            "gobuster",
+            "ffuf",
+            "wfuzz",
+            "nikto",
+            "wpscan",
+            "masscan",
+            "rustscan",
+            "enum4linux",
+            "enum4linux-ng",
+            "theHarvester",
+            "theharvester",
+            "bloodhound-python",
+            "responder",
+            "evil-winrm",
         }
 
         self.disallowed_tokens = {"|", "||", "&", "&&", ";", ">", ">>", "<", "<<", "$(", "`"}
@@ -319,24 +354,23 @@ def main() -> None:
         print("İstek boş olamaz.")
         sys.exit(2)
 
-    user_request_enriched, sqlmap_argv = istegi_zenginlestir(istek_ham)
+    user_request_enriched, argv_listesi = istegi_zenginlestir(istek_ham)
 
-    if sqlmap_argv is not None:
-        plan = [
-            Step(
-                title="sqlmap ile test",
-                rationale=(
-                    "Kullanıcının girdiği hedef URL ve parametrelere göre SQL enjeksiyon kontrolüdür. "
-                    "Yalnızca izin verilen sistemler veya lab ortamlarında kullanın."
-                ),
-                command=sqlmap_argv,
-                needs_confirmation=True,
-                risk_reason=(
-                    "sqlmap hedefe istek gönderir ve ağ/sunucu yükü oluşturabilir; "
-                    "yalnızca yetkilendirilmiş testlerde çalıştırın."
-                ),
-            ),
-        ]
+    if argv_listesi:
+        plan = []
+        for av in argv_listesi:
+            tool_name = av[0] if av else "komut"
+            risk_msg = f"{tool_name} yalnızca izin/kapsamdaki ya da laboratuvar ortamlarında çalıştırılmalıdır."
+
+            plan.append(
+                Step(
+                    title=f"{tool_name} (sihirbaz)",
+                    rationale="İsteğiniz ve etkileşimli parametre sorularından üretilmiş komuttur.",
+                    command=av,
+                    needs_confirmation=True,
+                    risk_reason=risk_msg,
+                )
+            )
     else:
         plan = planner.propose_plan(user_request_enriched)
 

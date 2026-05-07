@@ -41,6 +41,22 @@ class ShellPolicy:
             "mount",
             "umount",
             "sqlmap",
+            "nmap",
+            "hydra",
+            "gobuster",
+            "ffuf",
+            "wfuzz",
+            "nikto",
+            "wpscan",
+            "masscan",
+            "rustscan",
+            "enum4linux",
+            "enum4linux-ng",
+            "theHarvester",
+            "theharvester",
+            "bloodhound-python",
+            "responder",
+            "evil-winrm",
         }
 
         # Shell benzeri birleştirmeler bu sürümde desteklenmiyor.

@@ -17,10 +17,17 @@ Bu proje, kullanıcı isteklerini adım adım plana çeviren, komutları **güve
 Kali Linux'ta:
 
 ```bash
-python3 local_ai_agent.py
+python3 main.py "analyze system"
 ```
 
-Program sizden bir istek girmenizi ister. Ardından planı gösterir ve gerekiyorsa riskli adımlar için `e/h` onayı ister.
+İsterseniz parametre vererek çalıştırabilirsiniz. Parametre vermezseniz program **interaktif olarak** şu parametreleri Türkçe sorar:
+
+- İstek
+- Ollama adresi
+- Model adı
+- Rapor yolu
+
+Program adım adım planı gösterir, gerekiyorsa riskli adımlar için `e/h` onayı ister ve raporu `docs/report.md` dosyasına yazar.
 
 ## Üretilen Dosyalar
 
